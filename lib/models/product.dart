@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 class Product {
@@ -35,4 +34,19 @@ class Product {
 
   factory Product.fromJson(String source) =>
       Product.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  bool operator ==(covariant Product other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.title == title &&
+        other.price == price &&
+        other.image == image;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^ title.hashCode ^ price.hashCode ^ image.hashCode;
+  }
 }
