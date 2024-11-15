@@ -11,6 +11,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allProducts = ref.watch(productsProvider);
     final cartProducts = ref.watch(cartNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Garage Sale Products'),
@@ -18,50 +19,51 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: GridView.builder(
-          itemCount: allProducts.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 20,
-            childAspectRatio: 0.9,
-          ),
-          itemBuilder: (context, index) {
-            return Container(
-              padding: const EdgeInsets.all(15),
-              color: Colors.blueGrey.withOpacity(0.05),
-              child: Column(
-                children: [
-                  Image.asset(
-                    allProducts[index].image,
-                    height: 60,
-                    width: 60,
-                  ),
-                  Text(allProducts[index].title),
-                  Text('${allProducts[index].price}'),
-                  if (cartProducts.contains(allProducts[index]))
-                    TextButton(
-                      onPressed: () {
-                        ref
-                            .read(cartNotifierProvider.notifier)
-                            .removeProduct(allProducts[index]);
-                      },
-                      child: Text('Remove'),
+        child: cartProducts.isEmpty && allProducts.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : GridView.builder(
+                itemCount: allProducts.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  childAspectRatio: 0.9,
+                ),
+                itemBuilder: (context, index) {
+                  final product = allProducts[index];
+                  final isInCart = cartProducts.contains(product);
+
+                  return Container(
+                    padding: const EdgeInsets.all(15),
+                    color: Colors.blueGrey.withOpacity(0.05),
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          product.image,
+                          height: 60,
+                          width: 60,
+                        ),
+                        Text(product.title),
+                        Text('Rs ${product.price}'),
+                        TextButton(
+                          onPressed: () {
+                            if (isInCart) {
+                              ref
+                                  .read(cartNotifierProvider.notifier)
+                                  .removeProduct(product);
+                            } else {
+                              ref
+                                  .read(cartNotifierProvider.notifier)
+                                  .addProduct(product);
+                            }
+                          },
+                          child: Text(isInCart ? 'Remove' : 'Add to cart'),
+                        ),
+                      ],
                     ),
-                  if (!cartProducts.contains(allProducts[index]))
-                    TextButton(
-                      onPressed: () {
-                        ref
-                            .read(cartNotifierProvider.notifier)
-                            .addProduct(allProducts[index]);
-                      },
-                      child: Text('Add to cart'),
-                    ),
-                ],
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }
